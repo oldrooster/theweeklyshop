@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShoppingCart, UtensilsCrossed, Home, CalendarDays, Package, Upload } from "lucide-react";
+import { ShoppingCart, UtensilsCrossed, Home, CalendarDays, Package, Upload, Settings } from "lucide-react";
+import { MobileNav } from "@/components/mobile-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,13 +19,15 @@ export default function RootLayout({
       <body
         className="antialiased min-h-screen bg-background font-sans"
       >
-        <header className="border-b bg-card">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <header className="border-b bg-card sticky top-0 z-40">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between relative">
             <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
               <ShoppingCart className="h-6 w-6" />
-              The Weekly Shop
+              <span className="hidden sm:inline">The Weekly Shop</span>
+              <span className="sm:hidden">TWS</span>
             </Link>
-            <nav className="flex items-center gap-4">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-4">
               <Link
                 href="/"
                 className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -60,7 +63,16 @@ export default function RootLayout({
                 <Upload className="h-4 w-4" />
                 Import
               </Link>
+              <Link
+                href="/settings"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
             </nav>
+            {/* Mobile nav */}
+            <MobileNav />
           </div>
         </header>
         <main className="container mx-auto px-4 py-6">

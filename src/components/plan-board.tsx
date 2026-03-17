@@ -46,7 +46,8 @@ export function PlanBoard({ planId, meals, onAssignMeal, onRemoveMeal }: PlanBoa
       {MEAL_TYPES.map((mealType) => (
         <div key={mealType} className="space-y-2">
           <h3 className="text-lg font-semibold">{MEAL_TYPE_LABELS[mealType]}</h3>
-          <div className="grid grid-cols-7 gap-2">
+          {/* Desktop: 7-col grid. Mobile: horizontal scroll */}
+          <div className="hidden md:grid grid-cols-7 gap-2">
             {DAYS_SHORT.map((day, dayIndex) => {
               const assigned = getMeal(dayIndex, mealType);
               return (
@@ -75,6 +76,43 @@ export function PlanBoard({ planId, meals, onAssignMeal, onRemoveMeal }: PlanBoa
                         filterCategory={mealType === "snack" ? undefined : mealType}
                         onSelect={(meal) => onAssignMeal(dayIndex, mealType, meal.id)}
                         placeholder={`Add ${mealType}...`}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {/* Mobile: stacked list */}
+          <div className="md:hidden space-y-1.5">
+            {DAYS_SHORT.map((day, dayIndex) => {
+              const assigned = getMeal(dayIndex, mealType);
+              return (
+                <div
+                  key={`m-${dayIndex}-${mealType}`}
+                  className={`rounded-lg border p-2.5 flex items-center gap-3 ${
+                    assigned ? MEAL_TYPE_COLORS[mealType] : "bg-muted/30"
+                  }`}
+                >
+                  <span className="text-xs font-semibold text-muted-foreground w-8 shrink-0">{day}</span>
+                  {assigned ? (
+                    <div className="flex-1 flex items-center justify-between min-w-0">
+                      <span className="text-sm font-medium truncate">{assigned.mealName}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0"
+                        onClick={() => onRemoveMeal(dayIndex, mealType)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex-1 min-w-0">
+                      <MealSelector
+                        filterCategory={mealType === "snack" ? undefined : mealType}
+                        onSelect={(meal) => onAssignMeal(dayIndex, mealType, meal.id)}
+                        placeholder={`Add...`}
                       />
                     </div>
                   )}

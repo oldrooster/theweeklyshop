@@ -49,36 +49,38 @@ export function QuickAddInput({ planId, items, onAdd, onRemove }: QuickAddInputP
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Add any item... e.g. cat food, birthday cake"
-          className="flex-1"
+          placeholder="Add item... e.g. cat food"
+          className="flex-1 min-w-[150px]"
         />
-        <Input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Qty"
-          className="w-20"
-          onKeyDown={handleKeyDown}
-        />
-        <select
-          value={unit}
-          onChange={(e) => setUnit(e.target.value)}
-          className="flex h-10 rounded-md border border-input bg-background px-2 py-2 text-sm w-24"
-        >
-          {UNITS.map((u) => (
-            <option key={u} value={u}>
-              {u || "—"}
-            </option>
-          ))}
-        </select>
-        <Button onClick={handleAdd} disabled={!name.trim() || adding} size="icon">
-          {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-        </Button>
+        <div className="flex gap-2">
+          <Input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="Qty"
+            className="w-16 sm:w-20"
+            onKeyDown={handleKeyDown}
+          />
+          <select
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className="flex h-10 rounded-md border border-input bg-background px-2 py-2 text-sm w-20 sm:w-24"
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u || "—"}
+              </option>
+            ))}
+          </select>
+          <Button onClick={handleAdd} disabled={!name.trim() || adding} size="icon">
+            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       {manualItems.length > 0 && (

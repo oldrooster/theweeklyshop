@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/lib/aggregator";
 import { formatQuantity } from "@/lib/units";
-import { Check, X, RotateCcw, Eye, EyeOff, Printer } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Check, X, RotateCcw, Eye, EyeOff, Printer, Search } from "lucide-react";
 
 interface ShoppingListItem {
   id: string;
@@ -29,13 +30,16 @@ interface ShoppingListProps {
 export function ShoppingList({ items, onToggleChecked, onToggleRemoved }: ShoppingListProps) {
   const [showRemoved, setShowRemoved] = useState(false);
   const [mode, setMode] = useState<"review" | "final">("review");
+  const [search, setSearch] = useState("");
 
   const activeItems = items.filter((i) => !i.removed);
   const removedItems = items.filter((i) => i.removed);
 
   // Group by category
   const grouped = new Map<string, ShoppingListItem[]>();
-  const itemsToShow = mode === "review" ? activeItems : activeItems.filter((i) => !i.checked);
+  const searchLower = search.toLowerCase();
+  const itemsToShow = (mode === "review" ? activeItems : activeItems.filter((i) => !i.checked))
+    .filter((i) => !search || i.name.toLowerCase().includes(searchLower));
 
   for (const item of itemsToShow) {
     const cat = item.category || "other";
@@ -58,6 +62,17 @@ export function ShoppingList({ items, onToggleChecked, onToggleRemoved }: Shoppi
 
   return (
     <div className="space-y-4">
+      {/* Search */}
+      <div className="relative print:hidden">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search items..."
+          className="pl-9 h-9"
+        />
+      </div>
+
       {/* Controls */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-2">
