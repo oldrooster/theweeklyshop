@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Package, Plus, Trash2, Loader2 } from "lucide-react";
+import { Package, Plus, Trash2, Loader2, Search } from "lucide-react";
 
 interface StapleItem {
   id: number;
@@ -27,6 +27,9 @@ export default function StaplesPage() {
   const [items, setItems] = useState<StapleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+
+  // New item form
+  const [search, setSearch] = useState("");
 
   // New item form
   const [newName, setNewName] = useState("");
@@ -78,10 +81,13 @@ export default function StaplesPage() {
     fetchItems();
   };
 
-  // Group items by staple category
+  // Group items by staple category, with search filter
+  const searchLower = search.toLowerCase();
   const grouped = STAPLE_CATEGORIES.map((cat) => ({
     ...cat,
-    items: items.filter((i) => i.category === cat.value),
+    items: items
+      .filter((i) => i.category === cat.value)
+      .filter((i) => !search || i.ingredientName.toLowerCase().includes(searchLower)),
   }));
 
   return (
@@ -159,6 +165,19 @@ export default function StaplesPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Search */}
+      {items.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search staples..."
+            className="pl-9 h-9 max-w-sm"
+          />
+        </div>
+      )}
 
       {/* List by category */}
       {loading ? (

@@ -160,9 +160,9 @@ export default function PlanPage() {
   return (
     <div className="space-y-6">
       {/* Week navigation */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <CalendarDays className="h-8 w-8 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <CalendarDays className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
           Weekly Plan
         </h1>
         <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function PlanPage() {
           <Button
             variant={isCurrentWeek ? "default" : "outline"}
             onClick={() => setWeekStart(getMonday())}
-            className="min-w-[180px]"
+            className="min-w-[140px] sm:min-w-[180px] text-xs sm:text-sm"
           >
             {formatWeekRange(weekStart)}
           </Button>
@@ -183,7 +183,7 @@ export default function PlanPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button variant="outline" onClick={handleCopyLastWeek} disabled={copying}>
           {copying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Copy className="h-4 w-4 mr-2" />}
           Copy Last Week
