@@ -86,3 +86,23 @@ body {
     border-color: var(--border);
   }
 }
+
+@media print {
+  header, nav {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+}
