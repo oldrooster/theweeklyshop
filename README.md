@@ -16,6 +16,28 @@ Built with Next.js, TypeScript, SQLite, and Tailwind CSS.
 
 ## Getting Started
 
+### Docker (recommended)
+
+```bash
+docker build -t theweeklyshop .
+docker run -p 3000:3000 -v theweeklyshop-data:/app/data theweeklyshop
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+The `-v` flag creates a named volume so your database persists across container restarts.
+
+To enable receipt import, pass your API key:
+
+```bash
+docker run -p 3000:3000 \
+  -v theweeklyshop-data:/app/data \
+  -e ANTHROPIC_API_KEY=sk-ant-... \
+  theweeklyshop
+```
+
+### Local development
+
 ```bash
 npm install
 npm run dev
@@ -24,8 +46,6 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 The SQLite database is created automatically in `data/weekly-shop.db` on first run.
-
-### Receipt Import (optional)
 
 To use the receipt import feature, add your Anthropic API key:
 
@@ -42,7 +62,8 @@ echo "ANTHROPIC_API_KEY=sk-ant-..." > .env.local
 | Database | SQLite via better-sqlite3 + Drizzle ORM |
 | Styling | Tailwind CSS + shadcn/ui |
 | Receipt parsing | Claude API (Sonnet) |
-| Deployment | Self-hosted (Node.js) |
+| Container | Docker (standalone Next.js build) |
+| Deployment | Self-hosted (Node.js or Docker) |
 
 ## Project Structure
 
