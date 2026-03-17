@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShoppingCart, UtensilsCrossed, Home, CalendarDays } from "lucide-react";
+import { ShoppingCart, UtensilsCrossed, Home, CalendarDays, Package } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,6 +45,13 @@ export default function RootLayout({
               >
                 <UtensilsCrossed className="h-4 w-4" />
                 Meals
+              </Link>
+              <Link
+                href="/staples"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Package className="h-4 w-4" />
+                Staples
               </Link>
             </nav>
           </div>
