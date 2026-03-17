@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanBoard } from "@/components/plan-board";
 import { QuickAddInput } from "@/components/quick-add-input";
 import { getMonday, addWeeks, formatWeekRange, type MealType } from "@/lib/week-utils";
-import { ChevronLeft, ChevronRight, Copy, CalendarDays, ShoppingBasket, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, CalendarDays, ShoppingBasket, ShoppingCart, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface PlanMeal {
   id: number;
@@ -187,6 +188,14 @@ export default function PlanPage() {
           {copying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Copy className="h-4 w-4 mr-2" />}
           Copy Last Week
         </Button>
+        {plan && plan.meals.length > 0 && (
+          <Link href={`/list/${plan.id}`}>
+            <Button>
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Generate Shopping List
+            </Button>
+          </Link>
+        )}
       </div>
 
       {loading ? (
