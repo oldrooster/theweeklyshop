@@ -59,8 +59,9 @@ staple_items
   id, household_id, ingredient_id, default_quantity, unit, category (staple/snack/household/bathroom)
 
 shopping_list_items
-  id, weekly_plan_id, ingredient_id, quantity, unit, checked (boolean),
-  source (meal/staple/manual), removed (boolean)
+  id, weekly_plan_id, ingredient_id (nullable), quantity, unit, checked (boolean),
+  source (meal/staple/manual), removed (boolean),
+  custom_name (nullable — used when source='manual' and item doesn't match an existing ingredient)
 ```
 
 **Key decisions:**
@@ -68,6 +69,7 @@ shopping_list_items
 - `shopping_list_items.removed` tracks items the user already has at home (requirement #10) without deleting them, so they can be restored.
 - `staple_items` stores the household's recurring items (milk, eggs, etc.) — added to every list automatically.
 - `weekly_plans` has status so you can clone last week's plan (the "quick mode" feature).
+- `shopping_list_items.source = 'manual'` supports freeform items added directly by the user — not tied to any meal or staple.
 
 ---
 
@@ -110,6 +112,7 @@ shopping_list_items
     /ingredient-input.tsx        — Ingredient autocomplete + quantity
     /plan-board.tsx              — Weekly meal planner grid (7 days × 4 meal types)
     /shopping-list.tsx           — Checkable shopping list
+    /quick-add-input.tsx         — Freeform item input with autocomplete
     /section-panel.tsx           — Collapsible dashboard section
     /pdf-upload.tsx              — Drag-and-drop PDF upload
 ```
@@ -129,7 +132,8 @@ The dashboard shows a single-page view with collapsible sections:
 5. **Snacks section** — Not day-specific. Pick snack items for the week.
 6. **Staples section** — Pre-populated from household defaults. Toggle on/off per week.
 7. **Household section** — Bathroom, laundry, cleaning items. Toggle on/off.
-8. **Generate List** button — Aggregates all ingredients → shopping list.
+8. **Quick Add section** — Freeform text input to add any item directly (e.g. "birthday cake", "cat food"). Type a name, optionally set quantity, and it goes straight onto the list. Autocompletes against existing ingredients but also allows completely new items.
+9. **Generate List** button — Aggregates all ingredients → shopping list.
 
 ### Flow 2: Shopping List
 
@@ -137,8 +141,9 @@ The dashboard shows a single-page view with collapsible sections:
 2. Smart quantity aggregation: "400g chicken (Meal A) + 300g chicken (Meal B) = 700g chicken".
 3. Items grouped by store category (produce, dairy, meat, frozen, etc.).
 4. User reviews list — checkboxes to mark "already have this" (requirement #10).
-5. Unchecked items = final shopping list.
-6. Can print or view on mobile in store.
+5. User can also quick-add freeform items directly on the list at any time.
+6. Unchecked items = final shopping list.
+7. Can print or view on mobile in store.
 
 ### Flow 3: Meal Library
 
@@ -147,7 +152,16 @@ The dashboard shows a single-page view with collapsible sections:
 3. Edit/delete existing meals.
 4. Meals are reusable — pick them week after week.
 
-### Flow 4: PDF Import
+### Flow 4: Quick Add (Freeform Items)
+
+1. Available both on the dashboard during planning AND directly on the shopping list.
+2. Text input with autocomplete against existing ingredients.
+3. If the item matches an existing ingredient, it links to it (enabling smart aggregation with meal-derived items).
+4. If no match, it's stored as a `custom_name` — a one-off item on this week's list.
+5. User can optionally set quantity and unit, or just type "cat food" and leave it unquantified.
+6. Freeform items appear in the shopping list under an "Other" category (or matched category if linked to an ingredient).
+
+### Flow 5: PDF Import
 
 1. Upload a PDF receipt (drag and drop or file picker).
 2. Server sends PDF to Claude API with a structured prompt.
