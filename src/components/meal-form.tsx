@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, X, Loader2, Sparkles } from "lucide-react";
 
 interface IngredientRow {
   ingredientName: string;
@@ -44,6 +44,34 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
     initial?.ingredients || [{ ingredientName: "", quantity: 1, unit: "pieces" }]
   );
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+
+  const handleAskClaude = async () => {
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const res = await fetch("/api/meals/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mealName: name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setGenerateError(data.error || "Failed to generate recipe");
+        return;
+      }
+      if (data.name) setName(data.name);
+      if (data.category) setCategory(data.category);
+      if (data.serves) setServes(data.serves);
+      if (data.instructions) setInstructions(data.instructions);
+      if (data.ingredients?.length) setIngredients(data.ingredients);
+    } catch {
+      setGenerateError("Failed to connect to the server");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const addIngredient = () => {
     setIngredients([...ingredients, { ingredientName: "", quantity: 1, unit: "pieces" }]);
@@ -89,13 +117,34 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Meal Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Spaghetti Bolognese"
-            required
-          />
+          <div className="flex gap-2">
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Spaghetti Bolognese"
+              required
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 shrink-0"
+              disabled={!name.trim() || generating}
+              onClick={handleAskClaude}
+            >
+              {generating ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4 mr-1" />
+              )}
+              {generating ? "Generating..." : "Ask Claude"}
+            </Button>
+          </div>
+          {generateError && (
+            <p className="text-sm text-red-500">{generateError}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -192,7 +241,7 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={saving || !name.trim()}>
+        <Button type="submit" disabled={saving || generating || !name.trim()}>
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {initial?.id ? "Update Meal" : "Save Meal"}
         </Button>
