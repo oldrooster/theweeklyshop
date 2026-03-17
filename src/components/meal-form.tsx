@@ -65,7 +65,15 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
       if (data.category) setCategory(data.category);
       if (data.serves) setServes(data.serves);
       if (data.instructions) setInstructions(data.instructions);
-      if (data.ingredients?.length) setIngredients(data.ingredients);
+      if (Array.isArray(data.ingredients) && data.ingredients.length) {
+        setIngredients(
+          data.ingredients.map((ing: Record<string, unknown>) => ({
+            ingredientName: String(ing.ingredientName || ing.name || ""),
+            quantity: Number(ing.quantity) || 1,
+            unit: UNITS.includes(String(ing.unit)) ? String(ing.unit) : "pieces",
+          }))
+        );
+      }
     } catch {
       setGenerateError("Failed to connect to the server");
     } finally {
