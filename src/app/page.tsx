@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UtensilsCrossed, ShoppingCart, BookOpen, Plus } from "lucide-react";
+import { UtensilsCrossed, ShoppingCart, BookOpen, Plus, CalendarDays } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -57,7 +57,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <ShoppingCart className="h-5 w-5 text-primary" />
+              <CalendarDays className="h-5 w-5 text-primary" />
               Weekly Plan
             </CardTitle>
             <CardDescription>
@@ -65,9 +65,12 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="secondary" className="w-full" disabled>
-              Coming in Phase 2
-            </Button>
+            <Link href="/plan">
+              <Button variant="secondary" className="w-full">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Plan This Week
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
