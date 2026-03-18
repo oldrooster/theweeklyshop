@@ -36,9 +36,14 @@ interface Plan {
 }
 
 export default function PlanPage() {
-  const [weekStart, setWeekStart] = useState(getMonday());
+  const [weekStart, setWeekStart] = useState("");
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Initialize weekStart on client only to avoid hydration mismatch
+  useEffect(() => {
+    setWeekStart(getMonday());
+  }, []);
   const [copying, setCopying] = useState(false);
 
   const fetchOrCreatePlan = useCallback(async (week: string) => {
@@ -66,12 +71,12 @@ export default function PlanPage() {
       data = await fullRes.json();
     }
 
-    setPlan(data);
+    setPlan({ ...data, meals: data.meals ?? [], quickAddItems: data.quickAddItems ?? [] });
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchOrCreatePlan(weekStart);
+    if (weekStart) fetchOrCreatePlan(weekStart);
   }, [weekStart, fetchOrCreatePlan]);
 
   const handleAssignMeal = async (dayOfWeek: number, mealType: MealType, mealId: number) => {
@@ -155,7 +160,7 @@ export default function PlanPage() {
     fetchOrCreatePlan(weekStart);
   };
 
-  const isCurrentWeek = weekStart === getMonday();
+  const isCurrentWeek = weekStart !== "" && weekStart === getMonday();
 
   return (
     <div className="space-y-6">
