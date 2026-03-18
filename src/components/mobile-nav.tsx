@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Home, CalendarDays, UtensilsCrossed, Package, Upload, Settings } from "lucide-react";
+import { Menu, X, Home, CalendarDays, UtensilsCrossed, Apple, Package, Upload, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/plan", label: "Plan", icon: CalendarDays },
   { href: "/meals", label: "Meals", icon: UtensilsCrossed },
+  { href: "/ingredients", label: "Ingredients", icon: Apple },
   { href: "/staples", label: "Staples", icon: Package },
   { href: "/import", label: "Import", icon: Upload },
   { href: "/settings", label: "Settings", icon: Settings },

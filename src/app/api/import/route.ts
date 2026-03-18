@@ -10,10 +10,11 @@ For each item return a JSON array of objects with these fields:
 - "quantity": numeric quantity (default 1 if not shown)
 - "unit": the unit — use one of: pieces, g, kg, ml, l, packs, loaves, bottles, rolls, bags. Infer from context (e.g. "2L milk" -> quantity: 2, unit: "l")
 - "category": one of: produce, dairy, meat, bakery, frozen, pantry, household, bathroom, snacks, drinks, other
-- "price": the price as a number (if visible), or null
+- "price": the price as a number in the currency shown on the receipt (if visible), or null
+- "currency": the currency code from the receipt (e.g. "USD", "GBP", "EUR", "AUD") — infer from currency symbols or store context
 
 Return ONLY a valid JSON array, no other text. Example:
-[{"name": "Bananas", "quantity": 6, "unit": "pieces", "category": "produce", "price": 1.20}]
+[{"name": "Bananas", "quantity": 6, "unit": "pieces", "category": "produce", "price": 1.20, "currency": "USD"}]
 
 If you cannot parse the receipt, return an empty array [].`;
 
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
+      max_tokens: 2048,
       messages: [{ role: "user", content }],
     });
 

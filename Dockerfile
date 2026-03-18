@@ -1,9 +1,9 @@
-FROM node:20-slim AS base
+FROM node:22-alpine AS base
 
 # --- Dependencies ---
 FROM base AS deps
 WORKDIR /app
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -23,7 +23,7 @@ ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
 # libstdc++ is needed at runtime by better-sqlite3 native addon
-RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache libstdc++
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { weeklyPlans, weeklyPlanMeals, meals } from "@/lib/schema";
+import { weeklyPlans, weeklyPlanMeals, meals, shoppingListItems } from "@/lib/schema";
 import { eq, desc } from "drizzle-orm";
 import { getMonday } from "@/lib/week-utils";
 
@@ -34,7 +34,13 @@ export async function GET(request: NextRequest) {
       .where(eq(weeklyPlanMeals.weeklyPlanId, plan.id))
       .all();
 
-    return NextResponse.json({ ...plan, meals: planMeals });
+    const quickAddItems = db
+      .select()
+      .from(shoppingListItems)
+      .where(eq(shoppingListItems.weeklyPlanId, plan.id))
+      .all();
+
+    return NextResponse.json({ ...plan, meals: planMeals, quickAddItems });
   }
 
   // List all plans, most recent first

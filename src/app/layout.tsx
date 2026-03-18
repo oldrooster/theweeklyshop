@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShoppingCart, UtensilsCrossed, Home, CalendarDays, Package, Upload, Settings } from "lucide-react";
+import { ShoppingCart, UtensilsCrossed, Home, CalendarDays, Apple, Package, Upload, Settings } from "lucide-react";
 import { MobileNav } from "@/components/mobile-nav";
 import "./globals.css";
 
@@ -48,6 +48,13 @@ export default function RootLayout({
               >
                 <UtensilsCrossed className="h-4 w-4" />
                 Meals
+              </Link>
+              <Link
+                href="/ingredients"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Apple className="h-4 w-4" />
+                Ingredients
               </Link>
               <Link
                 href="/staples"

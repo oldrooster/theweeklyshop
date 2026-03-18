@@ -22,6 +22,7 @@ interface ExtractedItem {
   unit: string;
   category: string;
   price: number | null;
+  currency: string;
   matched: { id: number; name: string; category: string } | null;
   action: "add_to_plan" | "add_staple" | "skip";
 }
@@ -337,7 +338,7 @@ export default function ImportPage() {
                     {/* Price */}
                     {item.price != null && (
                       <span className="text-xs text-muted-foreground w-14 text-right shrink-0">
-                        £{item.price.toFixed(2)}
+                        {new Intl.NumberFormat("en-NZ", { style: "currency", currency: item.currency || "NZD" }).format(item.price)}
                       </span>
                     )}
 
