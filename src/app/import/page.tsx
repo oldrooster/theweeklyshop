@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 
 interface ExtractedItem {
-  name: string;
+  ingredient: string;
+  brand: string | null;
   quantity: number;
   unit: string;
   category: string;
@@ -44,7 +45,6 @@ export default function ImportPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch available plans for "add to plan" action
   useEffect(() => {
     fetch("/api/plans")
       .then((r) => r.json())
@@ -63,7 +63,6 @@ export default function ImportPage() {
     setError(null);
     setSaved(false);
 
-    // Create preview for images
     if (f.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e) => setPreview(e.target?.result as string);
@@ -105,7 +104,6 @@ export default function ImportPage() {
         return;
       }
 
-      // Set default action based on whether item matched an existing ingredient
       const itemsWithAction = data.items.map((item: ExtractedItem) => ({
         ...item,
         action: "add_to_plan" as const,
@@ -134,10 +132,13 @@ export default function ImportPage() {
     const itemsToSave = items
       .filter((i) => i.action !== "skip")
       .map((i) => ({
-        name: i.matched?.name || i.name,
+        ingredient: i.matched?.name || i.ingredient,
+        brand: i.brand || null,
         quantity: i.quantity,
         unit: i.unit,
         category: i.matched?.category || i.category,
+        price: i.price,
+        currency: i.currency || "NZD",
         action: i.action,
         planId: i.action === "add_to_plan" ? selectedPlanId : undefined,
       }));
@@ -166,7 +167,7 @@ export default function ImportPage() {
           Import Receipt
         </h1>
         <p className="text-muted-foreground mt-1">
-          Upload a photo or PDF of a grocery receipt. Claude will extract the items for you.
+          Upload a photo or PDF of a grocery receipt. Claude will extract items, prices, and brands.
         </p>
       </div>
 
@@ -260,7 +261,7 @@ export default function ImportPage() {
                 Review Extracted Items ({items.length} found)
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Choose what to do with each item. Edit names or categories as needed.
+                Ingredient names have brands stripped out. Edit as needed, then confirm.
               </p>
             </CardHeader>
             <CardContent>
@@ -282,40 +283,62 @@ export default function ImportPage() {
                 </div>
               )}
 
+              {/* Column headers */}
+              <div className="hidden sm:grid grid-cols-[1fr_100px_80px_70px_80px_70px_auto] gap-1 px-3 mb-1 text-xs text-muted-foreground font-medium">
+                <span>Ingredient</span>
+                <span>Brand</span>
+                <span>Qty</span>
+                <span>Unit</span>
+                <span>Category</span>
+                <span className="text-right">Price</span>
+                <span></span>
+              </div>
+
               <div className="space-y-2">
                 {items.map((item, index) => (
                   <div
                     key={index}
-                    className={`flex items-center gap-2 py-2 px-3 rounded-md transition-colors ${
+                    className={`flex flex-col sm:grid sm:grid-cols-[1fr_100px_80px_70px_80px_70px_auto] items-start sm:items-center gap-1 py-2 px-3 rounded-md transition-colors ${
                       item.action === "skip"
                         ? "bg-muted/30 opacity-50"
                         : "bg-card border"
                     }`}
                   >
-                    {/* Match indicator */}
-                    {item.matched && (
-                      <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0" title="Matched to existing ingredient">
-                        matched
-                      </span>
-                    )}
+                    {/* Ingredient name + match badge */}
+                    <div className="flex items-center gap-1.5 w-full min-w-0">
+                      {item.matched && (
+                        <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
+                          matched
+                        </span>
+                      )}
+                      <Input
+                        value={item.ingredient}
+                        onChange={(e) => updateItem(index, { ingredient: e.target.value })}
+                        className="h-8 text-sm min-w-0"
+                        placeholder="Ingredient"
+                      />
+                    </div>
 
-                    {/* Editable name */}
+                    {/* Brand */}
                     <Input
-                      value={item.name}
-                      onChange={(e) => updateItem(index, { name: e.target.value })}
-                      className="h-8 text-sm flex-1 min-w-0"
+                      value={item.brand || ""}
+                      onChange={(e) => updateItem(index, { brand: e.target.value || null })}
+                      className="h-8 text-sm w-full sm:w-auto"
+                      placeholder="Brand"
                     />
 
-                    {/* Quantity + unit */}
+                    {/* Quantity */}
                     <Input
                       type="number"
                       step="any"
                       value={item.quantity}
                       onChange={(e) => updateItem(index, { quantity: parseFloat(e.target.value) || 1 })}
-                      className="h-8 text-sm w-16"
+                      className="h-8 text-sm w-20 sm:w-full"
                     />
+
+                    {/* Unit */}
                     <select
-                      className="h-8 rounded-md border border-input bg-background px-1 text-sm w-20"
+                      className="h-8 rounded-md border border-input bg-background px-1 text-sm w-20 sm:w-full"
                       value={item.unit}
                       onChange={(e) => updateItem(index, { unit: e.target.value })}
                     >
@@ -326,7 +349,7 @@ export default function ImportPage() {
 
                     {/* Category */}
                     <select
-                      className="h-8 rounded-md border border-input bg-background px-1 text-sm w-24 hidden sm:block"
+                      className="h-8 rounded-md border border-input bg-background px-1 text-sm w-24 sm:w-full"
                       value={item.category}
                       onChange={(e) => updateItem(index, { category: e.target.value })}
                     >
@@ -336,11 +359,12 @@ export default function ImportPage() {
                     </select>
 
                     {/* Price */}
-                    {item.price != null && (
-                      <span className="text-xs text-muted-foreground w-14 text-right shrink-0">
-                        {new Intl.NumberFormat("en-NZ", { style: "currency", currency: item.currency || "NZD" }).format(item.price)}
-                      </span>
-                    )}
+                    <span className="text-xs text-muted-foreground text-right shrink-0 w-16 sm:w-full">
+                      {item.price != null
+                        ? new Intl.NumberFormat("en-NZ", { style: "currency", currency: item.currency || "NZD" }).format(item.price)
+                        : <span className="text-muted-foreground/50">—</span>
+                      }
+                    </span>
 
                     {/* Action buttons */}
                     <div className="flex gap-1 shrink-0">
@@ -414,7 +438,7 @@ export default function ImportPage() {
             <Check className="h-12 w-12 mx-auto text-primary" />
             <h2 className="text-xl font-bold">Import Complete!</h2>
             <p className="text-muted-foreground">
-              {activeItems.length} items have been saved.
+              {activeItems.length} items saved with purchase history recorded.
             </p>
             <div className="flex justify-center gap-3">
               <Button

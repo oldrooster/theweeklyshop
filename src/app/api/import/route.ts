@@ -6,15 +6,16 @@ import { ingredients } from "@/lib/schema";
 const EXTRACTION_PROMPT = `You are a grocery receipt parser. Extract every purchased item from this receipt.
 
 For each item return a JSON array of objects with these fields:
-- "name": the item name, cleaned up (e.g. "ORGANIC BANANAS" -> "Bananas", "SK MILK 2L" -> "Semi-skimmed milk")
+- "ingredient": the BASE ingredient name WITHOUT any brand prefix, cleaned and lowercased (e.g. "PAMS PLAIN FLOUR 1KG" -> "plain flour", "ANCHOR BLUE MILK 2L" -> "blue milk", "ORGANIC BANANAS" -> "bananas")
+- "brand": the brand name if present, otherwise null (e.g. "Pams", "Anchor", "Woolworths Select", null). Strip store-brand prefixes from the ingredient name.
 - "quantity": numeric quantity (default 1 if not shown)
 - "unit": the unit — use one of: pieces, g, kg, ml, l, packs, loaves, bottles, rolls, bags. Infer from context (e.g. "2L milk" -> quantity: 2, unit: "l")
 - "category": one of: produce, dairy, meat, bakery, frozen, pantry, household, bathroom, snacks, drinks, other
 - "price": the price as a number in the currency shown on the receipt (if visible), or null
-- "currency": the currency code from the receipt (e.g. "USD", "GBP", "EUR", "AUD") — infer from currency symbols or store context
+- "currency": the currency code from the receipt (e.g. "USD", "GBP", "EUR", "NZD", "AUD") — infer from currency symbols or store context
 
 Return ONLY a valid JSON array, no other text. Example:
-[{"name": "Bananas", "quantity": 6, "unit": "pieces", "category": "produce", "price": 1.20, "currency": "USD"}]
+[{"ingredient": "plain flour", "brand": "Pams", "quantity": 1, "unit": "kg", "category": "pantry", "price": 2.50, "currency": "NZD"}]
 
 If you cannot parse the receipt, return an empty array [].`;
 
@@ -96,10 +97,12 @@ export async function POST(request: NextRequest) {
     const allIngredients = db.select().from(ingredients).all();
     const ingredientMap = new Map(allIngredients.map((i) => [i.name.toLowerCase(), i]));
 
-    const itemsWithMatches = extractedItems.map((item: { name: string; quantity: number; unit: string; category: string; price: number | null }) => {
-      const match = ingredientMap.get(item.name.toLowerCase());
+    const itemsWithMatches = extractedItems.map((item: { ingredient: string; brand: string | null; quantity: number; unit: string; category: string; price: number | null; currency: string }) => {
+      const ingredientName = (item.ingredient || "").toLowerCase().trim();
+      const match = ingredientMap.get(ingredientName);
       return {
         ...item,
+        ingredient: ingredientName,
         matched: match ? { id: match.id, name: match.name, category: match.category } : null,
       };
     });

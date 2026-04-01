@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(node_modules/.bin/next build:*)",
+      "Bash(npm install:*)",
+      "Bash(npx --no-install next build)",
+      "Bash(node -e \":*)",
+      "Bash(npm run:*)",
+      "Bash(/usr/bin/env bash:*)",
+      "Bash(echo \"exit: $?\")"
+    ]
+  }
+}

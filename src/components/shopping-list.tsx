@@ -160,9 +160,18 @@ export function ShoppingList({ items, onToggleChecked, onToggleRemoved }: Shoppi
                       {item.name}
                     </span>
                     {item.sources.length > 0 && mode === "review" && (
-                      <span className="text-xs text-muted-foreground hidden sm:inline truncate print:hidden">
-                        ({item.sources.join(", ")})
-                      </span>
+                      <div className="hidden sm:flex gap-1 flex-wrap print:hidden">
+                        {item.sources
+                          .filter((s) => s !== "staple" && s !== "quick add")
+                          .map((source, i) => (
+                            <span
+                              key={i}
+                              className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                            >
+                              {source}
+                            </span>
+                          ))}
+                      </div>
                     )}
                   </div>
                   {mode === "review" && (

@@ -115,5 +115,22 @@ function initializeDatabase() {
       removed INTEGER NOT NULL DEFAULT 0,
       custom_name TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS brands (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS purchase_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ingredient_id INTEGER NOT NULL REFERENCES ingredients(id) ON DELETE CASCADE,
+      brand_id INTEGER REFERENCES brands(id) ON DELETE SET NULL,
+      quantity REAL NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'pieces',
+      price REAL,
+      currency TEXT DEFAULT 'NZD',
+      purchased_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 }

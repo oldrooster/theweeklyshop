@@ -88,3 +88,20 @@ export const shoppingListItems = sqliteTable("shopping_list_items", {
   removed: integer("removed", { mode: "boolean" }).notNull().default(false),
   customName: text("custom_name"),
 });
+
+export const brands = sqliteTable("brands", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  createdAt: text("created_at").default(sql`(datetime('now'))`).notNull(),
+});
+
+export const purchaseHistory = sqliteTable("purchase_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ingredientId: integer("ingredient_id").notNull().references(() => ingredients.id, { onDelete: "cascade" }),
+  brandId: integer("brand_id").references(() => brands.id, { onDelete: "set null" }),
+  quantity: real("quantity").notNull(),
+  unit: text("unit").notNull().default("pieces"),
+  price: real("price"),
+  currency: text("currency").default("NZD"),
+  purchasedAt: text("purchased_at").default(sql`(datetime('now'))`).notNull(),
+});

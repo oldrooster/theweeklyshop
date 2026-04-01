@@ -14,6 +14,11 @@ interface IngredientWithStats {
   mealCount: number;
   planCount: number;
   isStaple: boolean;
+  lastPrice: number | null;
+  lastCurrency: string | null;
+  lastPurchasedAt: string | null;
+  lastBrandName: string | null;
+  purchaseCount: number;
 }
 
 const CATEGORY_FILTERS = [
@@ -168,7 +173,8 @@ export default function IngredientsPage() {
                 <th className="py-2 px-3 font-medium">Name</th>
                 <th className="py-2 px-3 font-medium hidden sm:table-cell">Category</th>
                 <th className="py-2 px-3 font-medium text-center">Meals</th>
-                <th className="py-2 px-3 font-medium text-center hidden sm:table-cell">Lists</th>
+                <th className="py-2 px-3 font-medium text-right hidden md:table-cell">Last Price</th>
+                <th className="py-2 px-3 font-medium hidden lg:table-cell">Last Bought</th>
                 <th className="py-2 px-3 font-medium text-right">Action</th>
               </tr>
             </thead>
@@ -192,10 +198,40 @@ export default function IngredientsPage() {
                       {ing.mealCount}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-center hidden sm:table-cell">
-                    <span className={`text-sm ${ing.planCount > 0 ? "font-medium" : "text-muted-foreground"}`}>
-                      {ing.planCount}
-                    </span>
+                  <td className="py-2 px-3 text-right hidden md:table-cell">
+                    {ing.lastPrice != null ? (
+                      <div>
+                        <span className="text-sm font-medium">
+                          {new Intl.NumberFormat("en-NZ", {
+                            style: "currency",
+                            currency: ing.lastCurrency || "NZD",
+                          }).format(ing.lastPrice)}
+                        </span>
+                        {ing.purchaseCount > 1 && (
+                          <span className="text-xs text-muted-foreground ml-1">×{ing.purchaseCount}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </td>
+                  <td className="py-2 px-3 hidden lg:table-cell">
+                    {ing.lastPurchasedAt ? (
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(ing.lastPurchasedAt).toLocaleDateString("en-NZ", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                        {ing.lastBrandName && (
+                          <span className="block text-xs text-muted-foreground/70">{ing.lastBrandName}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">Never imported</span>
+                    )}
                   </td>
                   <td className="py-2 px-3 text-right">
                     <Button
