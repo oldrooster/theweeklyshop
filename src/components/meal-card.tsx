@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Edit, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Markdown } from "@/components/markdown";
 import { useState } from "react";
 
 interface MealIngredient {
@@ -89,8 +90,8 @@ export function MealCard({ meal, onEdit, onDelete }: MealCardProps) {
           </div>
         )}
         {expanded && meal.instructions && (
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{meal.instructions}</p>
+          <div className="mt-3 pt-3 border-t text-muted-foreground">
+            <Markdown content={meal.instructions} />
           </div>
         )}
       </CardContent>

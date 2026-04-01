@@ -33,6 +33,13 @@ The database is stored in a named Docker volume (`theweeklyshop-data`) and persi
 docker compose up --build
 ```
 
+To use a bind mount instead of a named volume (e.g. to access the database file directly), update `docker-compose.yml`:
+
+```yaml
+volumes:
+  - ./data:/app/data   # bind mount — no UID issues, runs as root
+```
+
 ### Docker (manual)
 
 ```bash

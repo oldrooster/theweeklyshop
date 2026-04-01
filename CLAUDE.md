@@ -71,7 +71,7 @@ docker build -t theweeklyshop .
 docker run -p 3000:3000 -v theweeklyshop-data:/app/data -e ANTHROPIC_API_KEY=sk-ant-... theweeklyshop
 ```
 
-The Dockerfile uses a 3-stage build (deps → builder → runner) with Next.js standalone output. `better-sqlite3` is a native addon — `python3 make g++` are needed at build time; `libstdc++` is needed at runtime.
+The Dockerfile uses a 3-stage build (deps → builder → runner) with Next.js standalone output. `better-sqlite3` is a native addon — `python3 make g++` are needed at build time; `libstdc++` is needed at runtime. The container runs as root so bind mounts work without UID mapping.
 
 ## What to Avoid
 
