@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { generateText, getAIConfig, getCredentialStatus } from "@/lib/ai";
 
 const RECIPE_PROMPT = `You are a recipe generator. Given a meal name, generate a complete recipe.
 
@@ -7,7 +7,8 @@ Return ONLY a valid JSON object (no other text) with these exact fields:
 - "name": the meal name, properly spelled and capitalised
 - "category": one of "breakfast", "lunch", "dinner", "snack"
 - "serves": number of servings (usually 4)
-- "instructions": step-by-step cooking instructions as a single string with numbered steps
+- "instructions": step-by-step cooking instructions formatted in markdown. Use a "## Method" heading followed by a numbered list. Example:
+  "## Method\\n1. Preheat the oven to 180°C.\\n2. Mix the dry ingredients.\\n3. Fold in the wet ingredients."
 - "ingredients": array of objects, each with:
   - "ingredientName": ingredient name in lowercase (e.g. "spaghetti", "olive oil")
   - "quantity": numeric quantity
@@ -16,10 +17,14 @@ Return ONLY a valid JSON object (no other text) with these exact fields:
 Use metric units where practical. Be specific with quantities.`;
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  const config = getAIConfig("generate");
+  const creds = getCredentialStatus();
+  const hasCredential = config.provider === "claude" ? creds.claude : creds.vertex;
+
+  if (!hasCredential) {
+    const envVar = config.provider === "claude" ? "ANTHROPIC_API_KEY" : "GOOGLE_VERTEX_SA_KEY";
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not configured. Add it to your .env.local file." },
+      { error: `${envVar} is not configured. Add it to your environment variables.` },
       { status: 500 }
     );
   }
@@ -30,22 +35,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Meal name is required" }, { status: 400 });
   }
 
-  const client = new Anthropic({ apiKey });
-
   try {
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2048,
-      system: RECIPE_PROMPT,
-      messages: [{ role: "user", content: `Generate a complete recipe for: ${mealName}` }],
-    });
+    const rawText = await generateText(
+      "generate",
+      RECIPE_PROMPT,
+      `Generate a complete recipe for: ${mealName}`
+    );
 
-    const textBlock = message.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      return NextResponse.json({ error: "No response from Claude" }, { status: 500 });
-    }
+    // Strip markdown code fences if present
+    const stripped = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
 
-    const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return NextResponse.json({ error: "Could not parse recipe from response" }, { status: 422 });
     }

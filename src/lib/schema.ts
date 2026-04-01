@@ -89,6 +89,17 @@ export const shoppingListItems = sqliteTable("shopping_list_items", {
   customName: text("custom_name"),
 });
 
+export const aiSettings = sqliteTable("ai_settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  purpose: text("purpose", { enum: ["import", "generate"] }).notNull().unique(),
+  provider: text("provider", { enum: ["claude", "vertex"] }).notNull().default("claude"),
+  model: text("model").notNull(),
+  maxTokens: integer("max_tokens").notNull().default(4096),
+  vertexProject: text("vertex_project"),
+  vertexLocation: text("vertex_location").default("us-central1"),
+  updatedAt: text("updated_at").default(sql`(datetime('now'))`).notNull(),
+});
+
 export const brands = sqliteTable("brands", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),

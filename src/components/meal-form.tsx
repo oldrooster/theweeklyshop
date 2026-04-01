@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, Loader2, Sparkles } from "lucide-react";
+import { Plus, X, Loader2, Sparkles, Eye, Pencil } from "lucide-react";
+import { Markdown } from "@/components/markdown";
 
 interface IngredientRow {
   ingredientName: string;
@@ -46,6 +47,7 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [instructionsPreview, setInstructionsPreview] = useState(false);
 
   const handleAskClaude = async () => {
     setGenerating(true);
@@ -64,7 +66,7 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
       if (data.name) setName(data.name);
       if (data.category) setCategory(data.category);
       if (data.serves) setServes(data.serves);
-      if (data.instructions) setInstructions(data.instructions);
+      if (data.instructions) { setInstructions(data.instructions); setInstructionsPreview(true); }
       if (Array.isArray(data.ingredients) && data.ingredients.length) {
         setIngredients(
           data.ingredients.map((ing: Record<string, unknown>) => ({
@@ -235,14 +237,36 @@ export function MealForm({ onSave, onCancel, initial }: MealFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="instructions">Instructions</Label>
-        <Textarea
-          id="instructions"
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          placeholder="How to cook this meal..."
-          rows={5}
-        />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="instructions">Instructions</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs gap-1"
+            onClick={() => setInstructionsPreview(!instructionsPreview)}
+            disabled={!instructions.trim()}
+          >
+            {instructionsPreview ? (
+              <><Pencil className="h-3 w-3" /> Edit</>
+            ) : (
+              <><Eye className="h-3 w-3" /> Preview</>
+            )}
+          </Button>
+        </div>
+        {instructionsPreview ? (
+          <div className="min-h-[120px] rounded-md border border-input bg-muted/30 px-3 py-2 text-muted-foreground">
+            <Markdown content={instructions} />
+          </div>
+        ) : (
+          <Textarea
+            id="instructions"
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            placeholder="How to cook this meal... (supports markdown)"
+            rows={5}
+          />
+        )}
       </div>
 
       <div className="flex justify-end gap-2">

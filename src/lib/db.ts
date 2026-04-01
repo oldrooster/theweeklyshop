@@ -116,6 +116,17 @@ function initializeDatabase() {
       custom_name TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS ai_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      purpose TEXT NOT NULL UNIQUE CHECK (purpose IN ('import', 'generate')),
+      provider TEXT NOT NULL DEFAULT 'claude' CHECK (provider IN ('claude', 'vertex')),
+      model TEXT NOT NULL,
+      max_tokens INTEGER NOT NULL DEFAULT 4096,
+      vertex_project TEXT,
+      vertex_location TEXT DEFAULT 'us-central1',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS brands (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
