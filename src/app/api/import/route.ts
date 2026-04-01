@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
   }
 
+  console.log(`[import] file="${file.name}" type="${file.type}" size=${file.size}`);
+
   // Read the file
   const bytes = await file.arrayBuffer();
   const base64 = Buffer.from(bytes).toString("base64");
@@ -52,6 +54,8 @@ export async function POST(request: NextRequest) {
   } else {
     mediaType = "image/jpeg";
   }
+
+  console.log(`[import] sending to Claude as mediaType="${mediaType}"`);
 
   const client = new Anthropic({ apiKey });
 
@@ -78,19 +82,33 @@ export async function POST(request: NextRequest) {
       messages: [{ role: "user", content }],
     });
 
+    console.log(`[import] Claude stop_reason="${message.stop_reason}" content_blocks=${message.content.length}`);
+
     // Extract text response
     const textBlock = message.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") {
+      console.error("[import] No text block in Claude response:", JSON.stringify(message.content));
       return NextResponse.json({ error: "No text response from Claude" }, { status: 500 });
     }
+
+    console.log(`[import] Claude raw response (first 500 chars): ${textBlock.text.slice(0, 500)}`);
 
     // Parse JSON from response
     const jsonMatch = textBlock.text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
+      console.error(`[import] Could not find JSON array in response. Full text:\n${textBlock.text}`);
       return NextResponse.json({ error: "Could not parse items from receipt", raw: textBlock.text }, { status: 422 });
     }
 
-    const extractedItems = JSON.parse(jsonMatch[0]);
+    let extractedItems;
+    try {
+      extractedItems = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error(`[import] JSON.parse failed: ${parseErr}\nMatched text: ${jsonMatch[0].slice(0, 500)}`);
+      return NextResponse.json({ error: "Could not parse items from receipt", raw: jsonMatch[0] }, { status: 422 });
+    }
+
+    console.log(`[import] extracted ${extractedItems.length} items`);
 
     // Try to match extracted items to existing ingredients
     const db = getDb();
@@ -113,6 +131,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[import] Claude API error: ${message}`, err);
     return NextResponse.json({ error: `Claude API error: ${message}` }, { status: 500 });
   }
 }
