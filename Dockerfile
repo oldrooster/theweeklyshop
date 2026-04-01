@@ -25,18 +25,13 @@ ENV PORT=3000
 # libstdc++ is needed at runtime by better-sqlite3 native addon
 RUN apk add --no-cache libstdc++
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-
 # Copy standalone output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Create data directory for SQLite and give nextjs user ownership
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
-
-USER nextjs
+# Create data directory for SQLite
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 
